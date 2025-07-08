@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آلة حاسبة الأصناف</title>
+    
+    <!-- === السطران الجديدان لجعله تطبيق ويب === -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#005A9C">
+    <!-- ======================================= -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #005A9C;
+            --primary-hover: #003D6B;
+            --secondary-color: #f0f2f5; 
+            --accent-green: #28a745;
+            --accent-green-hover: #218838;
+            --accent-red: #dc3545;
+            --accent-red-hover: #c82333;
+            --text-color: #333;
+            --border-color: #dee2e6;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.7;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .search-container {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        #search-input-mobile {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 25px;
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+        }
+        
+        #calculators-container {
+            padding-bottom: 100px;
+        }
+
+        .calculator-container {
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: var(--border-radius);
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow);
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .calculator-container:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+
+        .calculator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .calculator-title-display {
+             display: flex;
+             align-items: center;
+             gap: 10px;
+        }
+
+        .calculator-title {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.3rem;
+        }
+        
+        .calculator-date {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .edit-title-btn {
+            background: none; border: none; color: var(--primary-color);
+            cursor: pointer; font-size: 1rem;
+        }
+        .edit-title-btn:hover { color: var(--primary-hover); }
+
+        .calculator-title-input {
+            width: 100%; padding: 10px; margin-bottom: 10px;
+            box-sizing: border-box; border: 1px solid #ccc;
+            border-radius: var(--border-radius); font-family: 'Cairo', sans-serif;
+            font-size: 1.1rem;
+        }
+
+        .item {
+            display: grid;
+            grid-template-columns: 1fr 1fr 80px 80px 60px; 
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: var(--border-radius);
+        }
+
+        select, input[type="number"] {
+            padding: 10px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px; border-radius: var(--border-radius);
+            cursor: pointer; color: white; border: none;
+            font-family: 'Cairo', sans-serif; font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        button:hover { opacity: 0.85; }
+
+        .item button { background-color: var(--accent-red); }
+
+        .totals-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        .total, .shipping, .grand-total {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 10px; font-size: 1.1rem; font-weight: 600;
+        }
+        .grand-total {
+            font-size: 1.4rem; color: var(--primary-color);
+            border-top: 2px dashed var(--border-color);
+            padding-top: 15px; margin-top: 15px;
+        }
+        
+        .price, .shipping-cost, .grand-total-value { font-weight: 700; }
+
+        .results-text-container {
+            margin-top: 20px; padding: 15px;
+            border: 1px solid var(--primary-color);
+            background-color: #e8f0fe;
+            border-radius: var(--border-radius);
+            white-space: pre-wrap;
+            font-family: 'Menlo', 'Consolas', monospace;
+            text-align: right; line-height: 1.8;
+            font-size: 1rem; font-weight: bold;
+            -webkit-user-select: text; user-select: text;
+        }
+        .copy-actions { margin-top: 10px; display: flex; gap: 10px; }
+        .copy-actions button { flex-grow: 1; }
+        .copy-instruction { font-size: 0.9rem; color: #555; text-align: center; margin-top: 8px; }
+
+        .fixed-controls {
+            position: fixed; bottom: 15px; left: 50%;
+            transform: translateX(-50%); display: flex;
+            align-items: center; justify-content: center; gap: 10px;
+            z-index: 1000; background-color: var(--card-bg);
+            padding: 12px 20px; border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15); width: auto;
+            max-width: 95%;
+        }
+
+        #search-input-desktop {
+            width: 250px; border-radius: 20px;
+            padding: 10px 15px; border: 1px solid var(--border-color);
+        }
+        .new-calculator-btn { background-color: var(--accent-green); }
+        .json-btn { background-color: var(--primary-color); }
+
+        #json-file-input { display: none; }
+        .import-json-label {
+            padding: 10px 20px; background-color: var(--primary-color);
+            color: white; border-radius: var(--border-radius); cursor: pointer;
+            font-weight: 600;
+        }
+        .calculator-counter {
+            background-color: #e9ecef; color: #495057;
+            padding: 10px 15px; border-radius: 20px; font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 10px 10px 100px 10px; }
+            h1 { font-size: 1.5rem; }
+            
+            .search-container { display: block; }
+
+            .item {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                padding: 15px;
+            }
+
+            select, input[type="number"], button {
+                font-size: 1rem;
+                padding: 12px;
+            }
+            .item-controls { display: flex; gap: 10px; align-items: center; }
+            .item-controls input[type="number"] { width: 70px; flex-shrink: 0; }
+            .item-controls .price { flex-grow: 1; text-align: center; }
+            .item-controls button { font-size: 0.9rem; padding: 10px; }
+
+            .fixed-controls {
+                flex-direction: row; justify-content: space-around;
+                width: 100%; max-width: 100%;
+                bottom: 0; left: 0; right: 0;
+                border-radius: 0;
+                padding: 10px 5px;
+                border-top: 1px solid var(--border-color);
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            }
+            #search-input-desktop, .calculator-counter { display: none; }
+            .fixed-controls button, .fixed-controls .import-json-label {
+                padding: 10px; font-size: 0.8rem;
+                display: flex; flex-direction: column; align-items: center;
+                gap: 2px;
+                background: none; color: var(--primary-color);
+            }
+            .fixed-controls .new-calculator-btn { color: var(--accent-green); }
+        }
+    </style>
+</head>
+<body>
+    <h1>آلة حاسبة الأصناف</h1>
+    <div class="search-container">
+        <input type="text" id="search-input-mobile" placeholder="ابحث في عناوين الآلات الحاسبة..." onkeyup="searchCalculators(this.value)">
+    </div>
+    <div id="calculators-container"></div>
+    <div class="fixed-controls">
+        <input type="text" id="search-input-desktop" placeholder="ابحث..." onkeyup="searchCalculators(this.value)">
+        <button class="new-calculator-btn" onclick="addNewCalculator()"><span>➕</span><span>جديدة</span></button>
+        <button class="json-btn" onclick="exportCalculatorsAsJSON()"><span>💾</span><span>حفظ</span></button>
+        <label for="json-file-input" class="import-json-label"><span>📂</span><span>تحميل</span></label>
+        <input type="file" id="json-file-input" accept=".json" onchange="importCalculatorsFromJSON(event)">
+        <div class="calculator-counter" id="calculator-counter"></div>
+    </div>
+
+    <script>
+        // الأصناف والأسعار والفئات
+        const prices = {
+            "1- كيلو عسل نواره البرسيم  صايم ": 180,"2- كيلو عسل  برسيم بلدى   ": 140,
+            "3- كيلو عسل برسيم صحراوي ": 230,"4- كيلو عسل زهور الموالح": 230,"5- كيلو عسل زهور الشمر الجبلي": 250,
+            "6- كيلو عسل الاثل  ": 250,"7- كيلو عسل زهور حبه البركه":220,"8- كيلو عسل زهور الزعتر الطبيه الجبلي الاورجانك":250,
+            "9- كيلو عسل زهور البردقوش الطبيعي صايم نهائياً":200,"10- كيلو عسل أعشاب جبليه مدينه مرسي علم": 300,
+            "11- كيلو عسل سدر ص سدر": 300,"12- كيلو عسل زهور الأعشاب الطبيه" : 250,"13- كيلو عسل أعشاب جبليه سانت كاترين" : 400,
+            "1- نصف كيلو عسل نواره البرسيم  صايم ": 90,"2- نصف كيلو عسل  برسيم بلدى": 70,"3-نصف عسل برسيم صحراوي ":115 ,
+            "4-نصف عسل زهور الموالح":115  ,"5-نصف عسل زهور الشمر الجبلي":125,"6-نصف عسل  الاثل ": 125 ,"7-نصف عسل زهور حبه البركه": 110,
+            "8-نصف عسل زهور الزعتر الطبيه الجبلي الاورجانك":125  ,"9-نصف عسل زهور البردقوش الطبيعي صايم نهائياً":100 ,
+            "10-نصف عسل أعشاب جبليه مدينه مرسي علم":150  ,"11-نصف عسل سدر صحراوي": 150 ,"12-نصف عسل زهور الأعشاب الطبيه": 125 ,
+            "13- نصف عسل أعشاب جبليه سانت كاترين":200,
+            "1- كيلو سدر جبلي فصيلة الحضرمي الملكي":700 ,"2- كيلو سدر جبلي فصيله الحضرمي":550 ,"3- كيلو سدر جبلي كشميري ملكي":1800 ,
+            "4- كيلو سدر جبلي يمني عصيمي ملكي ":2800 ,"5- كيلو سدر جبلي فصيلة الدوعني الملكي":1200 ,
+            "6- كيلو سدر العاقول الجبلي النادر الصايم ":500 ,"7- كيلو سدر السمره اليمني الملكي":1300 ,"8- كيلو دوعنى يمنى":2800 ,
+            "1-نصف سدر جبلي فصيلة الحضرمي الملكي":400 ,"2-نصف سدر جبلي فصيله الحضرمي":300 ,"3-نصف سدر جبلي كشميري ملكي": 950,
+            "4-نصف سدر جبلي يمني عصيمي ملكي ":1450 ,"5-نصف سدر جبلي فصيلة الدوعني الملكي":650 ,"6-نصف عسل العاقول الجبلي النادر الصايم ":300 ,"7-نصف عسل السمره اليمني الملكي":700 ,"8- نصف كيلو دوعنى يمنى":1450 ,"1- لتر زيت زيتون اكسترا فيرجن ": 600 ,
+            "1- نصف لتر زيت زيتون اكسترا فيرجن ":310 ,"2- زيت جوز الهند العضوي الغذائي برطمان حوالي 300 جرام" :175 ,
+            "3- زيت جوز الهند العضوي الغذائي برطمان  140 " :140 ,
+            "1- لتر خل عنب احمر بلسمك اورجانك عضوي غير مبستر": 360,
+            "2- لتر خل التفاح   العضوي غير المبستر" : 260,"3- لتر خل رمان   " : 350,"3- نصف لتر خل رمان   " : 185,
+            "1- نصف لتر خل عنب احمر بلسمك اورجانك عضوي غير مبستر": 190,"2- نصف لتر خل التفاح العضوي   غير المبستر" : 140,
+            "1-كيلو خلطة هركليز خلطة البشوات رقم1 ":2200,"1-نصف كيلو خلطة هركليز خلطة البشوات رقم1 ":1150,
+            "2-كيلو خلطة مينى هركليز خلطة البشوات رقم2 ":1400,"2-نصف كيلو خلطة مينى هركليز خلطة البشوات رقم2 ":750,
+            "3-كيلو خلطة متزوجين مركزة خلطه الباور والمناعه سدر حضرمى رقم3":1000,
+            "3-نصف كيلو خلطة متزوجين مركزة خلطه الباور والمناعه سدر حضرمى رقم3":550,
+            "4-كيلو خلطة الموظفين والكادحين  سدر حضرمى رقم 4":750,"4-نصف كيلو خلطة الموظفين والكادحين  سدر حضرمى رقم 4":400,
+            "5-كيلو خلطة متزوجين عادى عسل برسيم رقم5": 500,
+            "5-نصف كيلو خلطة متزوجين عادى عسل برسيم رقم5": 250,
+            "6-كيلو خلطة متزوجين مركزة عسل برسيم رقم6": 550,
+            "6-نصف كيلو خلطة متزوجين مركزة عسل برسيم رقم6": 275,
+            "7-كيلو خلطة متزوجين مركزةجدا عسل برسيم رقم7": 600,
+            "7-نصف كيلو خلطة متزوجين مركزةجدا عسل برسيم رقم7": 300,
+            "8-كيلو خلطة مناعة الاطفال حضرمى ملكى رقم8":1000,
+            "8-نصف كيلو خلطة مناعة الاطفال حضرمى ملكى رقم8":550,
+            "9-كيلو خلطة مناعة الاطفال برسيم صايم عادى رقم9":400,
+            "9-نصف كيلو خلطة مناعة الاطفال برسيم صايم عادى رقم9":200,
+            "10-كيلو خلطة مناعة الاطفال برسيم صايم مركزة رقم10":500,
+            "10-نصف كيلو خلطة مناعة الاطفال برسيم صايم مركزة رقم10":250,
+            "11-كيلو خلطة مناعة الاطفال برسيم صايم مركزة جدا رقم11":600,
+            "11-نصف كيلو خلطة مناعة الاطفال برسيم صايم مركزة جدا رقم11":300,
+            "1- كيلو عرض عسل برسيم صحراوي ": 210,
+            "1- كيلو عرض عسل الشمر الجبلى ":227.5,"3-  كيلو عرض عسل اعشاب طبية":230,"كيلو عرض دوعنى ملكى ":1050,
+            "كيلو عرض دوعنى ملكى مدعم ":1000,"كيلو شمع شمر ": 300,"نصف كيلو شمع موالح": 150,
+            "1- جرام حبوب لقاح ": 1,"2- جرام بروبليز ": 7,"3- جرام غذاء ملكات":20,"3- جرام طلع نخل":1,"    ":0
+        };
+        const categories = {
+            "1":["1- كيلو عسل نواره البرسيم  صايم ","2- كيلو عسل  برسيم بلدى   ","3- كيلو عسل برسيم صحراوي ","4- كيلو عسل زهور الموالح","5- كيلو عسل زهور الشمر الجبلي","6- كيلو عسل الاثل  ","7- كيلو عسل زهور حبه البركه","8- كيلو عسل زهور الزعتر الطبيه الجبلي الاورجانك","9- كيلو عسل زهور البردقوش الطبيعي صايم نهائياً","10- كيلو عسل أعشاب جبليه مدينه مرسي علم","11- كيلو عسل سدر ص سدر","12- كيلو عسل زهور الأعشاب الطبيه","13- كيلو عسل أعشاب جبليه سانت كاترين"],
+            "2":["1- نصف كيلو عسل نواره البرسيم  صايم ","2- نصف كيلو عسل  برسيم بلدى","3-نصف عسل برسيم صحراوي ","4-نصف عسل زهور الموالح","5-نصف عسل زهور الشمر الجبلي","6-نصف عسل  الاثل ","7-نصف عسل زهور حبه البركه","8-نصف عسل زهور الزعتر الطبيه الجبلي الاورجانك","9-نصف عسل زهور البردقوش الطبيعي صايم نهائياً","10-نصف عسل أعشاب جبليه مدينه مرسي علم","11-نصف عسل سدر صحراوي","12-نصف عسل زهور الأعشاب الطبيه","13- نصف عسل أعشاب جبليه سانت كاترين"],
+            "3":["1- كيلو سدر جبلي فصيلة الحضرمي الملكي","2- كيلو سدر جبلي فصيله الحضرمي","3- كيلو سدر جبلي كشميري ملكي","4- كيلو سدر جبلي يمني عصيمي ملكي ","5- كيلو سدر جبلي فصيلة الدوعني الملكي","6- كيلو سدر العاقول الجبلي النادر الصايم ","7- كيلو سدر السمره اليمني الملكي","8- كيلو دوعنى يمنى"],
+            "4":["1-نصف سدر جبلي فصيلة الحضرمي الملكي","2-نصف سدر جبلي فصيله الحضرمي","3-نصف سدر جبلي كشميري ملكي","4-نصف سدر جبلي يمني عصيمي ملكي ","5-نصف سدر جبلي فصيلة الدوعني الملكي","6-نصف عسل العاقول الجبلي النادر الصايم ","7-نصف عسل السمره اليمني الملكي","8- نصف كيلو دوعنى يمنى"],
+            "5":["1- لتر زيت زيتون اكسترا فيرجن "],
+            "6":["1- نصف لتر زيت زيتون اكسترا فيرجن ","2- زيت جوز الهند العضوي الغذائي برطمان حوالي 300 جرام","3- زيت جوز الهند العضوي الغذائي برطمان  140 "],
+            "7":["1- لتر خل عنب احمر بلسمك اورجانك عضوي غير مبستر","2- لتر خل التفاح   العضوي غير المبستر","3- لتر خل رمان   ","3- نصف لتر خل رمان   "],
+            "8":["1- نصف لتر خل عنب احمر بلسمك اورجانك عضوي غير مبستر","2- نصف لتر خل التفاح العضوي   غير المبستر"],
+            "9":["1-كيلو خلطة هركليز خلطة البشوات رقم1 ","1-نصف كيلو خلطة هركليز خلطة البشوات رقم1 ","2-كيلو خلطة مينى هركليز خلطة البشوات رقم2 ","2-نصف كيلو خلطة مينى هركليز خلطة البشوات رقم2 ","3-كيلو خلطة متزوجين مركزة خلطه الباور والمناعه سدر حضرمى رقم3","3-نصف كيلو خلطة متزوجين مركزة خلطه الباور والمناعه سدر حضرمى رقم3","4-كيلو خلطة الموظفين والكادحين  سدر حضرمى رقم 4","4-نصف كيلو خلطة الموظفين والكادحين  سدر حضرمى رقم 4","5-كيلو خلطة متزوجين عادى عسل برسيم رقم5","5-نصف كيلو خلطة متزوجين عادى عسل برسيم رقم5","6-كيلو خلطة متزوجين مركزة عسل برسيم رقم6","6-نصف كيلو خلطة متزوجين مركزة عسل برسيم رقم6","7-كيلو خلطة متزوجين مركزةجدا عسل برسيم رقم7","7-نصف كيلو خلطة متزوجين مركزةجدا عسل برسيم رقم7","8-كيلو خلطة مناعة الاطفال حضرمى ملكى رقم8","8-نصف كيلو خلطة مناعة الاطفال حضرمى ملكى رقم8","9-كيلو خلطة مناعة الاطفال برسيم صايم عادى رقم9","9-نصف كيلو خلطة مناعة الاطفال برسيم صايم عادى رقم9","10-كيلو خلطة مناعة الاطفال برسيم صايم مركزة رقم10","10-نصف كيلو خلطة مناعة الاطفال برسيم صايم مركزة رقم10","11-كيلو خلطة مناعة الاطفال برسيم صايم مركزة جدا رقم11","11-نصف كيلو خلطة مناعة الاطفال برسيم صايم مركزة جدا رقم11"],
+            "10":["1- كيلو عرض عسل برسيم صحراوي ","1- كيلو عرض عسل الشمر الجبلى ","3-  كيلو عرض عسل اعشاب طبية","كيلو عرض دوعنى ملكى ","كيلو عرض دوعنى ملكى مدعم "],
+            "11":["كيلو شمع شمر ","نصف كيلو شمع موالح","1- جرام حبوب لقاح ","2- جرام بروبليز ","3- جرام غذاء ملكات","3- جرام طلع نخل","    "]
+        };
+        const shippingCosts = {
+            "جميع المحافظات": 90,"الصعيد والبحر الاحمر والغردقة": 120,"سوهاج الشحن 25 او 30": 30,"شحن مجانى": 0
+        };
+
+        // كل دوال الجافاسكريبت هنا...
+        // تم مراجعتها بالكامل لتكون متوافقة مع التصميم الجديد
+        function updateCalculatorCounter() {
+            const count = document.querySelectorAll('.calculator-container').length;
+            const counterDesktop = document.getElementById('calculator-counter');
+            if (counterDesktop) counterDesktop.textContent = `العدد: ${count}`;
+        }
+
+        function createCalculator(id) {
+            const calculator = document.createElement('div');
+            calculator.className = 'calculator-container';
+            calculator.id = `calculator-${id}`;
+            const now = new Date();
+            const dateString = now.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+            calculator.innerHTML = `
+                <div class="calculator-header">
+                     <div class="calculator-title-display">
+                        <span class="calculator-title">آلة حاسبة ${id + 1}</span>
+                        <button class="edit-title-btn" onclick="enableTitleEdit(this, '${id}')">✏️</button>
+                    </div>
+                     <button onclick="removeCalculator('${id}')" style="background-color:var(--accent-red); font-size: 0.9rem; padding: 5px 10px;">حذف</button>
+                </div>
+                <input type="text" class="calculator-title-input" placeholder="أدخل اسماً للآلة الحاسبة..." style="display: none;" onchange="updateCalculatorTitle(this, '${id}')" onblur="updateCalculatorTitle(this, '${id}')">
+                <div class="calculator-date">تاريخ الإنشاء: ${dateString}</div>
+                <div id="items-container-${id}" style="margin-top: 20px;"></div>
+                <button onclick="addItem('${id}')" style="background-color: var(--primary-color); margin-top:15px; width: 100%;">+ إضافة صنف</button>
+                <div class="totals-section">
+                    <div class="total"><span>الإجمالي:</span><span class="price" id="total-${id}">0 جنيه</span></div>
+                    <div class="shipping"><label for="governorate-${id}" style="flex-shrink:0; margin-left:10px;">منطقة الشحن:</label><select id="governorate-${id}" onchange="updateShipping('${id}')"><option value="">اختر</option><option value="جميع المحافظات">جميع المحافظات</option><option value="الصعيد والبحر الاحمر والغردقة">صعيد/بحر أحمر</option><option value="سوهاج الشحن 25 او 30">سوهاج</option><option value="شحن مجانى">شحن مجاني</option></select></div>
+                    <div class="shipping"><span>سعر الشحن:</span><span class="shipping-cost" id="shipping-cost-${id}">0 جنيه</span></div>
+                    <div class="grand-total"><span>الإجمالي الكلي:</span><span class="grand-total-value" id="grand-total-${id}">0 جنيه</span></div>
+                </div>
+                <button onclick="showCalculatedResults('${id}')" style="background-color:var(--accent-green); margin-top: 20px; width: 100%; padding: 12px; font-size: 1.1rem;">🧾 عرض الفاتورة</button>
+                <div id="results-container-${id}" style="display:none;"></div>`;
+            return calculator;
+        }
+
+        function addItem(calculatorId) {
+            const itemsContainer = document.getElementById(`items-container-${calculatorId}`);
+            const newItem = document.createElement('div');
+            newItem.className = 'item';
+            newItem.innerHTML = `
+                <select onchange="updateItems(this, '${calculatorId}')"><option value="">اختر الفئة</option><option value="1">كيلو عسل</option><option value="2">نصف كيلو عسل</option><option value="3">كيلو عسل سدر</option><option value="4">نصف عسل سدر</option><option value="5">لتر زيت</option><option value="6">نصف لتر زيت</option><option value="7">لتر خل</option><option value="8">نصف لتر خل</option><option value="9">خلطات</option><option value="10">عروض</option><option value="11">اخرى</option></select>
+                <select onchange="updatePrice(this, '${calculatorId}')"><option value="">اختر الصنف</option></select>
+                <div class="item-controls"><input type="number" value="1" min="1" onchange="updatePrice(this, '${calculatorId}')"><strong class="price">0 جنيه</strong><button onclick="removeItem(this, '${calculatorId}')">إزالة</button></div>`;
+            itemsContainer.appendChild(newItem);
+            const categorySelect = newItem.querySelector('select:nth-of-type(1)');
+            categorySelect.value = '1';
+            updateItems(categorySelect, calculatorId);
+            saveCalculatorsState();
+        }
+
+        function updateItems(selectElement, calculatorId) {
+            const itemDiv = selectElement.closest('.item');
+            const itemSelect = itemDiv.querySelector('select:nth-of-type(2)');
+            const category = selectElement.value;
+            itemSelect.innerHTML = '<option value="">اختر الصنف</option>';
+            if (category && categories[category]) {
+                categories[category].forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item;
+                    option.textContent = item;
+                    itemSelect.appendChild(option);
+                });
+            }
+            updatePrice(itemSelect, calculatorId);
+        }
+
+        function updatePrice(element, calculatorId) {
+            const itemDiv = element.closest('.item');
+            const itemSelect = itemDiv.querySelector('select:nth-of-type(2)');
+            const quantityInput = itemDiv.querySelector('input[type="number"]');
+            const priceSpan = itemDiv.querySelector('.price');
+            const item = itemSelect.value;
+            const quantity = parseInt(quantityInput.value) || 0;
+            priceSpan.textContent = (item && quantity > 0 ? prices[item] * quantity : 0) + ' جنيه';
+            updateTotal(calculatorId);
+        }
+        
+        function removeItem(button, calculatorId) {
+            button.closest('.item').remove();
+            updateTotal(calculatorId);
+        }
+        
+        function updateTotal(calculatorId) {
+            let total = 0;
+            document.querySelectorAll(`#items-container-${calculatorId} .price`).forEach(span => {
+                total += parseFloat(span.textContent) || 0;
+            });
+            document.getElementById(`total-${calculatorId}`).textContent = total + ' جنيه';
+            updateGrandTotal(calculatorId);
+        }
+
+        function updateShipping(calculatorId) {
+            const governorate = document.getElementById(`governorate-${calculatorId}`).value;
+            const shippingCost = governorate ? shippingCosts[governorate] : 0;
+            document.getElementById(`shipping-cost-${calculatorId}`).textContent = shippingCost + ' جنيه';
+            updateGrandTotal(calculatorId);
+        }
+
+        function updateGrandTotal(calculatorId) {
+            const total = parseFloat(document.getElementById(`total-${calculatorId}`).textContent) || 0;
+            const shippingCost = parseFloat(document.getElementById(`shipping-cost-${calculatorId}`).textContent) || 0;
+            document.getElementById(`grand-total-${calculatorId}`).textContent = (total + shippingCost) + ' جنيه';
+            saveCalculatorsState();
+        }
+
+        function toArabicNumerals(str) {
+            return String(str).replace(/[0-9]/g, d => ({'0':'٠','1':'١','2':'٢','3':'٣','4':'٤','5':'٥','6':'٦','7':'٧','8':'٨','9':'٩'}[d]));
+        }
+
+        function searchCalculators(searchTerm) {
+            const term = searchTerm.toLowerCase();
+            document.querySelectorAll('.calculator-container').forEach(calc => {
+                const title = calc.querySelector('.calculator-title').textContent.toLowerCase();
+                calc.style.display = title.includes(term) ? 'block' : 'none';
+            });
+        }
+        
+        function showCalculatedResults(calculatorId) {
+            const resultsContainer = document.getElementById(`results-container-${calculatorId}`);
+            if (resultsContainer.style.display === 'block') { resultsContainer.style.display = 'none'; return; }
+            resultsContainer.innerHTML = ''; 
+            const items = document.querySelectorAll(`#items-container-${calculatorId} .item`);
+            if (items.length === 0) { alert('لا توجد عناصر.'); return; }
+            let resultsText = "*تفاصيل الطلب:*\n" + "الصنف\t=\tالسعر\n" + "______________________________\n";
+            let summaryList = [], itemLines = [], totalQuantity = 0;
+            items.forEach((item, index) => {
+                const itemName = item.querySelector('select:nth-of-type(2)').value;
+                const quantity = parseInt(item.querySelector('input[type="number"]').value);
+                const price = parseFloat(item.querySelector('.price').textContent);
+                if (itemName && quantity > 0 && price >= 0) {
+                    const cleanedItemName = itemName.replace(/^\d+\-\s*/g, '').trim();
+                    totalQuantity += quantity;
+                    itemLines.push(`${index + 1}- ${quantity > 1 ? `عدد ${toArabicNumerals(quantity)} ` : ''}${cleanedItemName}\t=\t${toArabicNumerals(price)}`);
+                    summaryList.push(`-${index + 1}-(${quantity > 1 ? `عدد ${quantity} ` : ''}${cleanedItemName})`);
+                }
+            });
+            if (itemLines.length === 0) { alert('لم يتم تحديد أصناف صالحة.'); return; }
+            resultsText += itemLines.join('\n') + `\n______________________________\n*عدد القطع*=\t${toArabicNumerals(totalQuantity)}\n______________________________\n`;
+            const total = parseFloat(document.getElementById(`total-${calculatorId}`).textContent);
+            const shippingSelect = document.getElementById(`governorate-${calculatorId}`);
+            const shippingText = shippingSelect.options[shippingSelect.selectedIndex].text;
+            const shippingCost = parseFloat(document.getElementById(`shipping-cost-${calculatorId}`).textContent);
+            const grandTotal = parseFloat(document.getElementById(`grand-total-${calculatorId}`).textContent);
+            resultsText += `*المجموع*=\t${toArabicNumerals(total)}\n`;
+            if (shippingSelect.value && shippingCost > 0) resultsText += `*تكلفة الشحن (${shippingText})* =\t${toArabicNumerals(shippingCost)}\n`;
+            resultsText += `______________________________\n*المجموع الكلي*=\t${toArabicNumerals(grandTotal)}\n______________________________\n`;
+            resultsText += `*مناحل الصعيدى و*:${summaryList.join(' ')}`;
+            const textNode = document.createElement('div');
+            textNode.className = 'results-text-container';
+            textNode.textContent = resultsText;
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'copy-actions';
+            const copyBtn = document.createElement('button');
+            copyBtn.textContent = '📋 نسخ النص مباشرة'; copyBtn.style.backgroundColor = 'var(--primary-color)';
+            const selectBtn = document.createElement('button');
+            selectBtn.textContent = '☝️ تحديد النص للنسخ'; selectBtn.style.backgroundColor = 'var(--accent-green)';
+            const instructionP = document.createElement('p');
+            instructionP.className = 'copy-instruction'; instructionP.textContent = 'جرّب "نسخ مباشر". إذا لم يعمل، استخدم زر "تحديد النص".';
+            copyBtn.onclick = () => {
+                const textarea = document.createElement('textarea');
+                textarea.value = resultsText;
+                textarea.style.position = 'fixed'; textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    if (document.execCommand('copy')) {
+                        copyBtn.textContent = '✅ تم النسخ!'; instructionP.textContent = 'تم النسخ إلى الحافظة.';
+                    } else { throw new Error(); }
+                } catch (err) {
+                    copyBtn.textContent = '❌ فشل النسخ'; instructionP.textContent = 'فشل النسخ المباشر. استخدم زر التحديد.';
+                }
+                document.body.removeChild(textarea);
+                setTimeout(() => { copyBtn.textContent = '📋 نسخ النص مباشرة'; }, 3000);
+            };
+            selectBtn.onclick = () => {
+                const range = document.createRange();
+                range.selectNodeContents(textNode);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                selectBtn.textContent = '✅ تم التحديد!';
+                instructionP.textContent = 'النص محدد الآن. استخدم خيار النسخ من هاتفك.';
+                setTimeout(() => { selectBtn.textContent = '☝️ تحديد النص للنسخ'; }, 3000);
+            };
+            actionsDiv.appendChild(copyBtn);
+            actionsDiv.appendChild(selectBtn);
+            resultsContainer.appendChild(textNode);
+            resultsContainer.appendChild(actionsDiv);
+            resultsContainer.appendChild(instructionP);
+            resultsContainer.style.display = 'block';
+        }
+
+        function getCalculatorsData() {
+            const data = [];
+            document.querySelectorAll('.calculator-container').forEach(calc => {
+                const id = calc.id.split('-')[1];
+                data.push({
+                    id: id, title: calc.querySelector('.calculator-title').textContent, date: calc.querySelector('.calculator-date').textContent,
+                    governorate: document.getElementById(`governorate-${id}`).value,
+                    items: Array.from(document.querySelectorAll(`#items-container-${id} .item`)).map(item => ({
+                        category: item.querySelector('select:nth-of-type(1)').value, item: item.querySelector('select:nth-of-type(2)').value, quantity: item.querySelector('input[type="number"]').value
+                    }))
+                });
+            });
+            return data;
+        }
+
+        function saveCalculatorsState() { localStorage.setItem('honeyCalculators', JSON.stringify(getCalculatorsData())); }
+
+        function loadCalculatorsFromData(calculatorsData) {
+            const container = document.getElementById('calculators-container');
+            container.innerHTML = '';
+            if (calculatorsData) {
+                calculatorsData.forEach(data => {
+                    const calculator = createCalculator(data.id);
+                    container.appendChild(calculator);
+                    calculator.querySelector('.calculator-title').textContent = data.title;
+                    calculator.querySelector('.calculator-date').textContent = data.date;
+                    const itemsContainer = document.getElementById(`items-container-${data.id}`);
+                    itemsContainer.innerHTML = ''; 
+                    (data.items || []).forEach(itemData => {
+                        const newItem = document.createElement('div');
+                        newItem.className = 'item';
+                        newItem.innerHTML = `
+                            <select onchange="updateItems(this, '${data.id}')"><option value="">اختر الفئة</option><option value="1">كيلو عسل</option><option value="2">نصف كيلو عسل</option><option value="3">كيلو عسل سدر</option><option value="4">نصف عسل سدر</option><option value="5">لتر زيت</option><option value="6">نصف لتر زيت</option><option value="7">لتر خل</option><option value="8">نصف لتر خل</option><option value="9">خلطات</option><option value="10">عروض</option><option value="11">اخرى</option></select>
+                            <select onchange="updatePrice(this, '${data.id}')"><option value="">اختر الصنف</option></select>
+                            <div class="item-controls"><input type="number" value="${itemData.quantity}" min="1" onchange="updatePrice(this, '${data.id}')"><strong class="price">0 جنيه</strong><button onclick="removeItem(this, '${data.id}')">إزالة</button></div>`;
+                        itemsContainer.appendChild(newItem);
+                        const catSelect = newItem.querySelector('select:nth-of-type(1)');
+                        catSelect.value = itemData.category;
+                        updateItems(catSelect, data.id);
+                        newItem.querySelector('select:nth-of-type(2)').value = itemData.item;
+                        updatePrice(newItem.querySelector('select:nth-of-type(2)'), data.id);
+                    });
+                    document.getElementById(`governorate-${data.id}`).value = data.governorate;
+                    updateShipping(data.id);
+                });
+            }
+            updateCalculatorCounter();
+        }
+
+        function exportCalculatorsAsJSON() {
+            const data = getCalculatorsData();
+            if (data.length === 0) { alert('لا يوجد بيانات للحفظ.'); return; }
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+            a.download = 'calculators_backup.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function importCalculatorsFromJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!confirm('سيؤدي هذا لاستبدال كل الآلات الحاسبة الحالية. هل أنت متأكد؟')) { event.target.value = null; return; }
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    loadCalculatorsFromData(data);
+                    saveCalculatorsState();
+                } catch (error) { alert('خطأ في قراءة الملف.'); console.error(error); }
+            };
+            reader.readAsText(file);
+            event.target.value = null;
+        }
+        
+        function addNewCalculator() {
+            const id = Date.now().toString();
+            document.getElementById('calculators-container').prepend(createCalculator(id));
+            updateCalculatorCounter();
+            saveCalculatorsState();
+        }
+
+        function enableTitleEdit(button, id) {
+            const header = button.closest('.calculator-header');
+            const titleDisplay = header.querySelector('.calculator-title-display');
+            const titleInput = header.parentElement.querySelector('.calculator-title-input');
+            const currentTitle = titleDisplay.querySelector('.calculator-title').textContent;
+            if (!currentTitle.startsWith("آلة حاسبة")) titleInput.value = currentTitle;
+            titleInput.style.display = 'block';
+            titleDisplay.style.display = 'none';
+            titleInput.focus();
+        }
+
+        function updateCalculatorTitle(input, id) {
+            const header = input.parentElement.querySelector('.calculator-header');
+            const titleDisplay = header.querySelector('.calculator-title-display');
+            const titleSpan = titleDisplay.querySelector('.calculator-title');
+            if (input.value.trim()) titleSpan.textContent = input.value.trim();
+            input.style.display = 'none';
+            titleDisplay.style.display = 'flex';
+            saveCalculatorsState();
+        }
+        
+        function removeCalculator(id) {
+            if (confirm('هل أنت متأكد من حذف هذه الآلة الحاسبة؟')) {
+                document.getElementById(`calculator-${id}`).remove();
+                updateCalculatorCounter();
+                saveCalculatorsState();
+            }
+        }
+
+        window.addEventListener('load', () => {
+            try {
+                const savedData = JSON.parse(localStorage.getItem('honeyCalculators'));
+                if (savedData && savedData.length > 0) {
+                    loadCalculatorsFromData(savedData);
+                } else {
+                    addNewCalculator();
+                }
+            } catch (e) {
+                console.error("Could not load from localStorage", e);
+                addNewCalculator();
+            }
+        });
+    </script>
+    
+    <!-- === كود تسجيل ملف الخدمة للعمل أوفلاين === -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('ServiceWorker: Registration Successful');
+                }).catch(err => {
+                    console.log('ServiceWorker: Registration Failed: ', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

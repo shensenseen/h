@@ -1,0 +1,17 @@
+{
+  "name": "آلة حاسبة الأصناف",
+  "short_name": "حاسبة الأصناف",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f0f2f5",
+  "theme_color": "#005A9C",
+  "description": "آلة حاسبة الأصناف تعمل دون اتصال بالإنترنت.",
+  "icons": [
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
