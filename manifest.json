@@ -1,7 +1,7 @@
 {
   "name": "آلة حاسبة الأصناف",
   "short_name": "حاسبة الأصناف",
-  "start_url": "index.html",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#f0f2f5",
   "theme_color": "#005A9C",
